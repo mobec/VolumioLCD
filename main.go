@@ -5,28 +5,18 @@ import (
 	"VolumioLCD/volumio"
 	"fmt"
 	"log"
-	"net/http"
 	"time"
 )
 
 const (
-	maxIdleConnections int = 20
-	timeout            int = 10
-	updateInterval     int = 200
+	updateInterval int    = 200
+	volumioURI     string = "http://volumio.local:3000"
 )
 
 func main() {
-	// Create the http client
-	httpClient := http.Client{
-		Transport: &http.Transport{
-			MaxIdleConnsPerHost: maxIdleConnections,
-		},
-		Timeout: time.Duration(timeout) * time.Second,
-	}
 
 	// Initialize volumio client
-	volumio.URI = "http://volumio.local:3000"
-	volumio.HttpClient = &httpClient
+	volumio.URI = volumioURI
 
 	for true {
 		state, err := volumio.GetPlayerState()

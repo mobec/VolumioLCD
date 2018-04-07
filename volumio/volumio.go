@@ -3,19 +3,27 @@ package volumio
 import (
 	"encoding/json"
 	"net/http"
+	"time"
 )
 
 var (
-	HttpClient *http.Client
+	httpClient *http.Client
 	URI        string
 )
 
 const (
 	maxIdleConnections int = 20
-	requestTimeout     int = 10
+	timeout            int = 10
 )
 
 func init() {
+	// Create the http client
+	httpClient = &http.Client{
+		Transport: &http.Transport{
+			MaxIdleConnsPerHost: maxIdleConnections,
+		},
+		Timeout: time.Duration(timeout) * time.Second,
+	}
 }
 
 // PlayerState contains all the fields from a volumio REST API 'getstate' call
@@ -39,7 +47,6 @@ type PlayerState struct {
 	Repeatsingle      bool
 	Consume           bool
 	Mute              bool
-	Stream            bool
 	Updatedb          bool
 	Volatile          bool
 	Service           string
@@ -59,7 +66,7 @@ func GetPlayerState() (PlayerState, error) {
 	}
 
 	// send the request with the reused http connection
-	resp, err := HttpClient.Do(req)
+	resp, err := httpClient.Do(req)
 	if err != nil {
 		return state, err
 	}
