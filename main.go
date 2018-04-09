@@ -5,15 +5,26 @@ import (
 	"VolumioLCD/display"
 	"VolumioLCD/logger"
 	"VolumioLCD/volumio"
+	"context"
+	"os"
+	"os/signal"
 	"time"
 )
 
 const (
-	updateInterval int    = 200
-	volumioURI     string = "http://localhost:3000"
+	updateInterval int    = 500
+	volumioURI     string = "http://volumio.local:3000"
 )
 
 func main() {
+	ctx := context.Background()
+	ctx, cancel := context.WithCancel(ctx)
+	sig := make(chan os.Signal, 1)
+	signal.Notify(sig, os.Interrupt)
+	defer func() {
+		signal.Stop(sig)
+		cancel()
+	}()
 
 	// Initialize volumio client
 	volumio.URI = volumioURI
@@ -27,15 +38,25 @@ func main() {
 	lcd.Screen.GetRow(1).SetChild(&titleScroll)
 	defer lcd.Close()
 
-	for {
-		state, err := volumio.GetPlayerState()
-		if err != nil {
-			logger.Errorf(err.Error())
+	go func() {
+		select {
+		case <-sig:
+			cancel()
+		case <-ctx.Done():
 		}
-		println(state.Artist)
-		artistText.SetText(state.Artist)
-		titleText.SetText(state.Title)
-		time.Sleep(time.Duration(updateInterval) * time.Millisecond)
-	}
+	}()
 
+	go func() {
+		for {
+			state, err := volumio.GetPlayerState()
+			if err != nil {
+				logger.Warningf(err.Error())
+			}
+			artistText.SetText(state.Artist)
+			titleText.SetText(state.Title)
+			time.Sleep(time.Duration(updateInterval) * time.Millisecond)
+		}
+	}()
+
+	<-sig
 }

@@ -18,7 +18,6 @@ type LCD struct {
 	Screen     Screen
 	loopStart  time.Time
 	frequency  float64
-	quit       chan bool
 }
 
 // NewLCD given the i2c bus line and the LCD's address. You can use i2cdetect to get the address of the LCD
@@ -44,7 +43,6 @@ func NewLCD(line int, address uint8) LCD {
 
 // Close must be called to close the connection to the lcd in a clean way
 func (lcd *LCD) Close() {
-	lcd.quit <- true
 	lcd.connection.Close()
 }
 
@@ -55,16 +53,14 @@ func (lcd *LCD) loop() {
 		// update dynamic view elements
 		lcd.Screen.update(deltaTime.Seconds())
 		// retrieve content from rows
+
 		for idx := range lcd.Screen.rows {
 			row := lcd.Screen.rows[idx].content()
 			if err := lcd.lcd.ShowMessage(row, hd44780.ShowOptions(idx+1)); err != nil {
 				logger.Errorf(err.Error())
 			}
 		}
-		// sleep thread to limit frequency
-		//time.Sleep(time.Duration(1.0/lcd.frequency)*time.Second - time.Since(lcd.loopStart))
-		if <-lcd.quit {
-			return
-		}
+		//sleep thread to limit frequency
+		time.Sleep(time.Duration(1.0/lcd.frequency)*time.Second - time.Since(lcd.loopStart))
 	}
 }
