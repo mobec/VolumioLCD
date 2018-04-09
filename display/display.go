@@ -59,12 +59,14 @@ func (lcd *LCD) loop() {
 		for idx := range lcd.Screen.rows {
 			row := lcd.Screen.rows[idx].content()
 			println(row)
-			lcd.lcd.SetPosition(1, 0)
-			if _, err := lcd.lcd.Write([]byte(row)); err != nil {
+			lcd.lcd.SetPosition(byte(idx+1), 0)
+			size, err := lcd.lcd.Write([]byte(row))
+			if err != nil {
 				logger.Errorf(err.Error())
 			}
-			println()
+			print(size)
 		}
+		println()
 		//sleep thread to limit frequency
 		time.Sleep(time.Duration(1.0/lcd.frequency)*time.Second - time.Since(lcd.loopStart))
 	}
