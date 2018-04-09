@@ -30,14 +30,15 @@ func main() {
 	volumio.URI = volumioURI
 
 	lcd := display.NewLCD(1, 0x27)
-	var artistText display.TextView
-	var titleText display.TextView
-	var titleScroll display.ScrollView
-	titleScroll.SetChild(&titleText)
-    titleScroll.SetLength(16)
-	lcd.Screen.GetRow(0).SetChild(&artistText)
-	lcd.Screen.GetRow(1).SetChild(&titleScroll)
-	defer lcd.Close()
+	lcd.Screen = display.NewScreen(2, 16)
+	// var artistText display.TextView
+	// var titleText display.TextView
+	// var titleScroll display.ScrollView
+	// titleScroll.SetChild(&titleText)
+	// titleScroll.SetLength(16)
+	// lcd.Screen.GetRow(0).SetChild(&artistText)
+	// lcd.Screen.GetRow(1).SetChild(&titleScroll)
+	// defer lcd.Close()
 
 	go func() {
 		select {
@@ -53,8 +54,9 @@ func main() {
 			if err != nil {
 				logger.Warningf(err.Error())
 			}
-			artistText.SetText(state.Artist)
-			titleText.SetText(state.Title)
+			println(state.Artist)
+			// artistText.SetText(state.Artist)
+			// titleText.SetText(state.Title)
 			time.Sleep(time.Duration(updateInterval) * time.Millisecond)
 		}
 	}()
