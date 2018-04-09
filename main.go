@@ -5,6 +5,8 @@ import (
 	"VolumioLCD/display"
 	"VolumioLCD/volumio"
 	"log"
+	"os"
+	"os/signal"
 	"time"
 )
 
@@ -26,7 +28,13 @@ func main() {
 	lcd.Screen.GetRow(0).SetChild(&artistText)
 	lcd.Screen.GetRow(1).SetChild(&titleScroll)
 
-	for true {
+	interrupt := make(chan os.Signal, 1)
+	signal.Notify(interrupt, os.Interrupt)
+	for {
+		for sig := range interrupt {
+			print(sig)
+			break
+		}
 		state, err := volumio.GetPlayerState()
 		if err != nil {
 			log.Fatal(err)
@@ -35,4 +43,6 @@ func main() {
 		titleText.SetText(state.Title)
 		time.Sleep(time.Duration(updateInterval) * time.Millisecond)
 	}
+
+	lcd.Close()
 }
