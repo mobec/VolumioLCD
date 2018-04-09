@@ -32,6 +32,10 @@ func NewLCD(line int, address uint8) LCD {
 	if err != nil {
 		logger.Errorf(err.Error())
 	}
+	err = lcd.lcd.BacklightOn()
+	if err != nil {
+		logger.Errorf(err.Error())
+	}
 
 	lcd.frequency = 0.5
 	lcd.Screen = NewScreen(2, 16)
@@ -58,7 +62,7 @@ func (lcd *LCD) loop() {
 		for idx := range lcd.Screen.rows {
 			row := lcd.Screen.rows[idx].content()
 			println(row)
-			if err := lcd.lcd.ShowMessage(row, hd44780.ShowOptions(idx+2)); err != nil {
+			if err := lcd.lcd.ShowMessage(row, hd44780.ShowOptions(idx+1)); err != nil {
 				logger.Errorf(err.Error())
 			}
 			println()
