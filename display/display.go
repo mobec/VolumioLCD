@@ -38,6 +38,8 @@ func NewLCD(line int, address uint8) LCD {
 		logger.Errorf(err.Error())
 	}
 
+	lcd.frequency = 5.0
+
 	lcd.Screen = NewScreen(2, 16)
 
 	go lcd.loop()
