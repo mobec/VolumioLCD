@@ -31,7 +31,7 @@ func NewLCD(line int, address uint8) LCD {
 	if err != nil {
 		logger.Errorf(err.Error())
 	}
-
+	lcd.lcd.BacklightOff()
 	lcd.lcd.BacklightOn()
 
 	lcd.frequency = 0.5
