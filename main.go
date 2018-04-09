@@ -2,11 +2,10 @@ package main
 
 // import "fmt"
 import (
+	"VolumioLCD/logger"
 	"VolumioLCD/volumio"
-	"log"
 	"os"
 	"os/signal"
-	"time"
 )
 
 const (
@@ -26,23 +25,24 @@ func main() {
 	// titleScroll.SetChild(&titleText)
 	// lcd.Screen.GetRow(0).SetChild(&artistText)
 	// lcd.Screen.GetRow(1).SetChild(&titleScroll)
+	// defer lcd.Close()
 
 	interrupt := make(chan os.Signal, 1)
 	signal.Notify(interrupt, os.Interrupt)
 	for {
 		for sig := range interrupt {
 			print(sig)
-			break
+			return
 		}
+
 		state, err := volumio.GetPlayerState()
 		if err != nil {
-			log.Fatal(err)
+			logger.Errorf(err.Error())
 		}
 		print(state.Artist)
 		// artistText.SetText(state.Artist)
 		// titleText.SetText(state.Title)
-		time.Sleep(time.Duration(updateInterval) * time.Millisecond)
+		//time.Sleep(time.Duration(updateInterval) * time.Millisecond)
 	}
 
-	// lcd.Close()
 }
