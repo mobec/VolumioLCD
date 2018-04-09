@@ -56,7 +56,7 @@ func (lcd *LCD) loop() {
 		lcd.Screen.update(deltaTime.Seconds())
 		// retrieve content from rows
 
-		for idx := range lcd.Screen.rows {
+		for idx := 0; idx < len(lcd.Screen.rows); idx++ {
 			row := lcd.Screen.rows[idx].content()
 			println(row)
 			lcd.lcd.SetPosition(byte(idx+1), 0)
