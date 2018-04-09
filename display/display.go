@@ -33,19 +33,13 @@ func NewLCD(line int, address uint8) LCD {
 		logger.Errorf(err.Error())
 	}
 
-	err = lcd.lcd.BacklightOn()
-	if err != nil {
-		logger.Errorf(err.Error())
-	}
-
 	lcd.frequency = 5.0
+    lcd.Screen = NewScreen(2, 16)
+    //lcd.lcd.ShowMessage("Hello World", hd44780.SHOW_LINE_1)
+    //time.Sleep(time.Duration(10.0) * time.Second)
 
-	lcd.Screen = NewScreen(2, 16)
-	lcd.lcd.ShowMessage("Hello World", hd44780.SHOW_LINE_1)
-	time.Sleep(time.Duration(10.0) * time.Second)
-	//go lcd.loop()
-
-	return lcd
+	go lcd.loop()
+    return lcd
 }
 
 // Close must be called to close the connection to the lcd in a clean way
