@@ -4,8 +4,7 @@ import (
 	"VolumioLCD/logger"
 	"time"
 
-	hd44780 "github.com/d2r2/go-hd44780"
-	i2c "github.com/d2r2/go-i2c"
+	"github.com/davecheney/i2c"
 )
 
 type Display interface {
@@ -13,7 +12,7 @@ type Display interface {
 
 type LCD struct {
 	connection *i2c.I2C
-	lcd        *hd44780.Lcd
+	lcd        *i2c.Lcd
 	Screen     Screen
 	loopStart  time.Time
 	frequency  float64
@@ -23,19 +22,17 @@ type LCD struct {
 func NewLCD(line int, address uint8) LCD {
 	var lcd LCD
 	var err error
-	lcd.connection, err = i2c.NewI2C(address, line)
+	lcd.connection, err = i2c.New(address, line)
 	if err != nil {
 		logger.Errorf(err.Error())
 	}
 
-	lcd.lcd, err = hd44780.NewLcd(lcd.connection, hd44780.LCD_UNKNOWN)
+	lcd.lcd, err = i2c.NewLcd(lcd.connection, 0x04, 0x01, 0x02, 0x10, 0x20, 0x40, 0x80, 0x08)
 	if err != nil {
 		logger.Errorf(err.Error())
 	}
-	err = lcd.lcd.BacklightOn()
-	if err != nil {
-		logger.Errorf(err.Error())
-	}
+
+	lcd.lcd.BacklightOn()
 
 	lcd.frequency = 0.5
 	lcd.Screen = NewScreen(2, 16)
@@ -62,7 +59,8 @@ func (lcd *LCD) loop() {
 		for idx := range lcd.Screen.rows {
 			row := lcd.Screen.rows[idx].content()
 			println(row)
-			if err := lcd.lcd.ShowMessage(row, hd44780.ShowOptions(idx+1)); err != nil {
+			lcd.lcd.SetPosition(1, 0)
+			if _, err := lcd.lcd.Write([]byte(row)); err != nil {
 				logger.Errorf(err.Error())
 			}
 			println()
