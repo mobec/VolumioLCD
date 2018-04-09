@@ -115,7 +115,7 @@ func (v *ScrollView) content() string {
 		v.position = 0
 	}
 
-	return v.child.content()[v.position : v.position+v.length]
+	return v.childContent[v.position : v.position+v.length]
 }
 
 // Update the scroll view
