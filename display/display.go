@@ -41,8 +41,9 @@ func NewLCD(line int, address uint8) LCD {
 	lcd.frequency = 5.0
 
 	lcd.Screen = NewScreen(2, 16)
-
-	go lcd.loop()
+	lcd.lcd.ShowMessage("Hello World", hd44780.SHOW_LINE_1)
+	time.Sleep(time.Duration(10.0) * time.Second)
+	//go lcd.loop()
 
 	return lcd
 }
