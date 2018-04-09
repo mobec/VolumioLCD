@@ -27,19 +27,19 @@ func NewLCD(line int, address uint8) LCD {
 		logger.Errorf(err.Error())
 	}
 
-	lcd.lcd, err = i2c.NewLcd(lcd.connection, 0x04, 0x01, 0x02, 0x10, 0x20, 0x40, 0x80, 0x08)
-	if err != nil {
-		logger.Errorf(err.Error())
-	}
 	lcd.connection.WriteByte(0x08)
-	//lcd.lcd.BacklightOn()
+	// lcd.lcd, err = i2c.NewLcd(lcd.connection, 0x04, 0x01, 0x02, 0x10, 0x20, 0x40, 0x80, 0x08)
+	// if err != nil {
+	// 	logger.Errorf(err.Error())
+	// }
+	// //lcd.lcd.BacklightOn()
 
-	lcd.frequency = 0.5
-	lcd.Screen = NewScreen(2, 16)
-	//lcd.lcd.ShowMessage("Hello World", hd44780.SHOW_LINE_1)
-	//time.Sleep(time.Duration(10.0) * time.Second)
+	// lcd.frequency = 0.5
+	// lcd.Screen = NewScreen(2, 16)
+	// //lcd.lcd.ShowMessage("Hello World", hd44780.SHOW_LINE_1)
+	// //time.Sleep(time.Duration(10.0) * time.Second)
 
-	go lcd.loop()
+	// go lcd.loop()
 	return lcd
 }
 
