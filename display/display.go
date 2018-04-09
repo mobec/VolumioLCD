@@ -34,12 +34,12 @@ func NewLCD(line int, address uint8) LCD {
 	}
 
 	lcd.frequency = 0.5
-    lcd.Screen = NewScreen(2, 16)
-    //lcd.lcd.ShowMessage("Hello World", hd44780.SHOW_LINE_1)
-    //time.Sleep(time.Duration(10.0) * time.Second)
+	lcd.Screen = NewScreen(2, 16)
+	//lcd.lcd.ShowMessage("Hello World", hd44780.SHOW_LINE_1)
+	//time.Sleep(time.Duration(10.0) * time.Second)
 
 	go lcd.loop()
-    return lcd
+	return lcd
 }
 
 // Close must be called to close the connection to the lcd in a clean way
@@ -57,11 +57,11 @@ func (lcd *LCD) loop() {
 
 		for idx := range lcd.Screen.rows {
 			row := lcd.Screen.rows[idx].content()
-            println(row)
-			if err := lcd.lcd.ShowMessage(row, hd44780.ShowOptions(idx+1)); err != nil {
+			println(row)
+			if err := lcd.lcd.ShowMessage(row, hd44780.ShowOptions(idx+2)); err != nil {
 				logger.Errorf(err.Error())
 			}
-            println()
+			println()
 		}
 		//sleep thread to limit frequency
 		time.Sleep(time.Duration(1.0/lcd.frequency)*time.Second - time.Since(lcd.loopStart))
