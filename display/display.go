@@ -2,7 +2,6 @@ package display
 
 import (
 	"VolumioLCD/logger"
-	"log"
 	"time"
 
 	hd44780 "github.com/d2r2/go-hd44780"
@@ -26,12 +25,17 @@ func NewLCD(line int, address uint8) LCD {
 	var err error
 	lcd.connection, err = i2c.NewI2C(address, line)
 	if err != nil {
-		log.Fatal(err)
+		logger.Errorf(err.Error())
 	}
 
 	lcd.lcd, err = hd44780.NewLcd(lcd.connection, hd44780.LCD_UNKNOWN)
 	if err != nil {
-		log.Fatal(err)
+		logger.Errorf(err.Error())
+	}
+
+	err = lcd.lcd.BacklightOn()
+	if err != nil {
+		logger.Errorf(err.Error())
 	}
 
 	lcd.Screen = NewScreen(2, 16)
