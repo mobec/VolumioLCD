@@ -116,11 +116,12 @@ func (l *LCD) Close() {
 func nibble(mode byte, data []byte) []byte {
 	nibBuf := make([]byte, 6*len(data))
 	for i := range data {
-		higher := (data[i] & 0x0F)
+		higher := (data[i] & 0xF0)
 		lower := ((data[i] << 4) & 0xF0)
 		nibBuf[i] = higher | mode | backlightOn
 		nibBuf[i+1] = higher | mode | en | backlightOn
 		nibBuf[i+2] = higher | mode | backlightOn
+
 		nibBuf[i+3] = lower | mode | backlightOn
 		nibBuf[i+4] = lower | mode | en | backlightOn
 		nibBuf[i+5] = lower | mode | backlightOn
