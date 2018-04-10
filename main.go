@@ -55,7 +55,6 @@ func main() {
 			if err != nil {
 				logger.Warningf(err.Error())
 			}
-			println(state.Artist)
 			artistText.SetText(state.Artist)
 			titleText.SetText(state.Title)
 			time.Sleep(time.Duration(updateInterval) * time.Millisecond)
