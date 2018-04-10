@@ -67,13 +67,14 @@ func New(line int, addr int) (*LCD, error) {
 
 	lcd.dev.Write([]byte{0x03, 0x03, 0x03, 0x02})
 	lcd.dev.Write([]byte{
-		cmdFunctionSet | func2Line | func5x8Dots | func8BitMode,
+		// the PCF8574 lcd backpack has only 4 data bus lines (DB4 to DB7)
+		cmdFunctionSet | func2Line | func5x8Dots | func4BitMode,
 		cmdDisplayControl | displayOn,
 		cmdClearDisplay,
 		cmdEntryModeSet | entryLeft,
 	})
 	time.Sleep(time.Duration(200) * time.Millisecond)
-    lcd.dev.Write([]byte{backlightOn})
+	lcd.dev.Write([]byte{backlightOn})
 
 	return &lcd, err
 }
@@ -102,4 +103,54 @@ func (l *LCD) Show(str string, line uint8, pos uint8) error {
 //Close must be called to free underlying ressources of the LCD
 func (l *LCD) Close() {
 	l.dev.Close()
+}
+
+// Driver functions
+
+//nibble splits 8bit data into nibbled 4b data + 4b signal
+// data of double length
+func nibble(mode byte, data []byte) []byte {
+	nibBuf := make([]byte, 2*len(data))
+	for i := range data {
+		nibBuf[i] = (data[i] & 0xF0) | mode
+		nibBuf[i+1] = ((data[i] << 4) & 0xF0) | mode
+	}
+	return nibBuf
+}
+
+//unnibble merges nibbled (4bit) data into 8bit data
+func unnibble(nibBuf []byte) []byte {
+	data := make([]byte, len(nibBuf)/2)
+	for i := range data {
+		higher := nibBuf[i] & 0xF0
+		lower := (nibBuf[i+1] & 0xF0) >> 4
+		data[i] = higher | lower
+	}
+	return data
+}
+
+func (l *LCD) writeIR(cmd byte) error {
+	// IR write as an internal operation (display clear, etc.)
+	data := nibble(en, []byte{cmd})
+	return l.dev.Write(data)
+}
+
+func (l *LCD) readIR() (byte, error) {
+	// Read busy flag (DB7) and address counter (DB0 to DB6)
+	buf := nibble(en|rw, []byte{0x00})
+	err := l.dev.Read(buf)
+	return unnibble(buf)[0], err
+}
+
+func (l *LCD) writeDR(data []byte) error {
+	// DR write as an internal operation (DR to DDRAM or CGRAM
+	buf := nibble(en|rs, data)
+	return l.dev.Write(buf)
+}
+
+func (l *LCD) readDR() (byte, error) {
+	// DR read as an internal operation (DDRAM or CGRAM to DR)
+	buf := nibble(en|rw|rs, []byte{0x00})
+	err := l.dev.Read(buf)
+	return unnibble(buf)[0], err
 }
