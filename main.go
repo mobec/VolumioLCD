@@ -68,7 +68,7 @@ func main() {
 	}
 	defer lcd.Close()
 
-	lcd.Show("Hello WorK", 1, 0)
+	lcd.Show("Hello World", 1, 0)
 
 	time.Sleep(time.Duration(5) * time.Second)
 }

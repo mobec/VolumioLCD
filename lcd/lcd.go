@@ -54,6 +54,7 @@ const (
 
 type LCD struct {
 	dev *i2c.Device
+	bl  byte
 }
 
 //New opens a connection to an lcd display and sets it up
@@ -77,6 +78,7 @@ func New(line int, addr int) (*LCD, error) {
 	time.Sleep(time.Duration(200) * time.Millisecond)
 
 	//lcd.dev.Write([]byte{backlightOn})
+	lcd.bl = backlightOn
 	lcd.writeIR(0x00)
 
 	return &lcd, err
@@ -98,16 +100,37 @@ func (l *LCD) Show(str string, line uint8, pos uint8) error {
 		return fmt.Errorf("Line %d is not valid", line)
 	}
 
-	l.writeIR(cmdSetDRAMAddr | addr)
+	if err := l.writeIR(cmdSetDRAMAddr | addr); err != nil {
+		return err
+	}
 	for i := range str {
-		l.writeDR(str[i])
+		if err := l.writeDR(str[i]); err != nil {
+			return err
+		}
 	}
 
 	return nil
 }
 
+//Backlight allows to turn the lcd's backlight on and off
+func (l *LCD) Backlight(isOn bool) error {
+	if isOn {
+		l.bl = backlightOn
+	} else {
+		l.bl = backlightOff
+	}
+	return l.writeIR(0x00)
+}
+
+//Clear clears the display from characters
+func (l *LCD) Clear() error {
+	return l.writeIR(cmdClearDisplay)
+}
+
 //Close must be called to free underlying ressources of the LCD
 func (l *LCD) Close() {
+	l.Clear()
+	l.Backlight(false)
 	l.dev.Close()
 }
 
@@ -119,8 +142,8 @@ func nibble(mode byte, data byte) []byte {
 	nibBuf := make([]byte, 2)
 	higher := (data & 0xF0)
 	lower := ((data << 4) & 0xF0)
-	nibBuf[0] = higher | mode | backlightOn
-	nibBuf[1] = lower | mode | backlightOn
+	nibBuf[0] = higher | mode
+	nibBuf[1] = lower | mode
 	return nibBuf
 }
 
@@ -161,9 +184,9 @@ func (l *LCD) readDR() (byte, error) {
 func (l *LCD) writeToDev(data []byte) error {
 	strobeBuf := make([]byte, 3*len(data))
 	for i := range data {
-		strobeBuf[i*3] = data[i]
-		strobeBuf[i*3+1] = data[i] | en
-		strobeBuf[i*3+2] = data[i]
+		strobeBuf[i*3] = data[i] | l.bl
+		strobeBuf[i*3+1] = data[i] | en | l.bl
+		strobeBuf[i*3+2] = data[i] | l.bl
 	}
 	return l.dev.Write(strobeBuf)
 }
