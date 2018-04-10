@@ -75,7 +75,8 @@ func New(line int, addr int) (*LCD, error) {
 	})
 	time.Sleep(time.Duration(200) * time.Millisecond)
 
-	lcd.writeIR([]byte{backlightOn})
+	lcd.dev.Write([]byte{backlightOn})
+	//lcd.writeIR([]byte{backlightOn})
 
 	return &lcd, err
 }
