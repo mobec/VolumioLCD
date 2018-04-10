@@ -138,7 +138,8 @@ func unnibble(nibBuf []byte) []byte {
 func (l *LCD) writeIR(cmds []byte) error {
 	// IR write as an internal operation (display clear, etc.)
 	data := nibble(0x00, cmds)
-	return l.dev.Write(data)
+	// return l.dev.Write(data)
+	return slowWrite(l.dev, data)
 }
 
 func (l *LCD) readIR(length int) ([]byte, error) {
@@ -151,7 +152,8 @@ func (l *LCD) readIR(length int) ([]byte, error) {
 func (l *LCD) writeDR(data []byte) error {
 	// DR write as an internal operation (DR to DDRAM or CGRAM
 	buf := nibble(rs, data)
-	return l.dev.Write(buf)
+	// return l.dev.Write(buf)
+	return slowWrite(l.dev, buf)
 }
 
 func (l *LCD) readDR(length int) ([]byte, error) {
@@ -159,4 +161,15 @@ func (l *LCD) readDR(length int) ([]byte, error) {
 	buf := nibble(rw|rs, make([]byte, length))
 	err := l.dev.Read(buf)
 	return unnibble(buf), err
+}
+
+func slowWrite(dev *i2c.Device, data []byte) error {
+	for i := range data {
+		err := dev.Write([]byte{data[i]})
+		if err != nil {
+			return err
+		}
+		time.Sleep(time.Duration(5) * time.Millisecond)
+	}
+	return nil
 }
