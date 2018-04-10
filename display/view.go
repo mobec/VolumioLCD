@@ -125,6 +125,7 @@ func (v *ScrollView) update(deltaTime float64) {
 	characterDuration := 1.0 / v.speed
 	v.mutex.Unlock()
 
+	print(deltaTime)
 	v.time += deltaTime
 	if v.time > characterDuration {
 		v.time -= characterDuration

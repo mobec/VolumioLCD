@@ -54,6 +54,6 @@ func (d *Display) loop() {
 			}
 		}
 		//sleep thread to limit frequency
-		time.Sleep(time.Duration(1.0/d.frequency)*time.Second - time.Since(d.loopStart))
+		time.Sleep(time.Duration(1.0/d.frequency)*time.Second - time.Since(d.loopStart)*time.Second)
 	}
 }
