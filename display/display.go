@@ -1,75 +1,61 @@
 package display
 
 import (
+	"VolumioLCD/lcd"
 	"VolumioLCD/logger"
 	"time"
-
-	"github.com/davecheney/i2c"
 )
 
-type Display interface {
+type IDisplay interface {
 }
 
-type LCD struct {
-	connection *i2c.I2C
-	lcd        *i2c.Lcd
-	Screen     Screen
-	loopStart  time.Time
-	frequency  float64
+type Display struct {
+	lcd       *lcd.LCD
+	Screen    Screen
+	loopStart time.Time
+	frequency float64
 }
 
 // NewLCD given the i2c bus line and the LCD's address. You can use i2cdetect to get the address of the LCD
-func NewLCD(line int, address uint8) LCD {
-	var lcd LCD
+func New(line int, address int) *Display {
+	var d Display
 	var err error
-	lcd.connection, err = i2c.New(address, line)
+	d.lcd, err = lcd.New(line, address)
 	if err != nil {
 		logger.Errorf(err.Error())
 	}
 
-	lcd.connection.WriteByte(0x08)
-    time.Sleep(time.Duration(5.0) * time.Second)
-    lcd.connection.WriteByte(0x00)
-// lcd.lcd, err = i2c.NewLcd(lcd.connection, 0x04, 0x01, 0x02, 0x10, 0x20, 0x40, 0x80, 0x08)
-	// if err != nil {
-	// 	logger.Errorf(err.Error())
-	// }
-	// //lcd.lcd.BacklightOn()
+	d.frequency = 0.5
+	d.Screen = NewScreen(2, 16)
+	//time.Sleep(time.Duration(10.0) * time.Second)
 
-	// lcd.frequency = 0.5
-	// lcd.Screen = NewScreen(2, 16)
-	// //lcd.lcd.ShowMessage("Hello World", hd44780.SHOW_LINE_1)
-	// //time.Sleep(time.Duration(10.0) * time.Second)
-
-	// go lcd.loop()
-	return lcd
+	go d.loop()
+	return &d
 }
 
 // Close must be called to close the connection to the lcd in a clean way
-func (lcd *LCD) Close() {
-	lcd.connection.Close()
+func (d *Display) Close() {
+	d.lcd.Close()
 }
 
-func (lcd *LCD) loop() {
+func (d *Display) loop() {
 	for {
-		deltaTime := time.Since(lcd.loopStart)
-		lcd.loopStart = time.Now()
+		deltaTime := time.Since(d.loopStart)
+		d.loopStart = time.Now()
 		// update dynamic view elements
-		lcd.Screen.update(deltaTime.Seconds())
+		d.Screen.update(deltaTime.Seconds())
 		// retrieve content from rows
 
-		for idx := 0; idx < len(lcd.Screen.rows); idx++ {
-			row := lcd.Screen.rows[idx].content()
+		for idx := 0; idx < len(d.Screen.rows); idx++ {
+			row := d.Screen.rows[idx].content()
 			println(row)
-			lcd.lcd.SetPosition(byte(idx+1), 0)
-			size, err := lcd.lcd.Write([]byte(row))
+			err := d.lcd.Show(row, uint8(idx+1), 0)
 			if err != nil {
 				logger.Errorf(err.Error())
 			}
-			print(size)
 		}
 		println()
 		//sleep thread to limit frequency
-		time.Sleep(time.Duration(1.0/lcd.frequency)*time.Second - time.Since(lcd.loopStart))
+		time.Sleep(time.Duration(1.0/d.frequency)*time.Second - time.Since(d.loopStart))
 	}
 }
