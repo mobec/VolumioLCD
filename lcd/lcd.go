@@ -174,7 +174,7 @@ func slowWrite(dev *i2c.Device, data []byte) error {
 		if err != nil {
 			return err
 		}
-		time.Sleep(time.Duration(5) * time.Millisecond)
+		time.Sleep(time.Duration(100) * time.Millisecond)
 	}
 	return nil
 }
