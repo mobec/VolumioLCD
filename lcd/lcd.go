@@ -69,10 +69,11 @@ func New(line int, addr int) (*LCD, error) {
 	lcd.writeIR([]byte{
 		// the PCF8574 lcd backpack has only 4 data bus lines (DB4 to DB7)
 		cmdFunctionSet | func2Line | func5x8Dots | func4BitMode,
-		cmdDisplayControl | displayOn,
-		cmdClearDisplay,
-		cmdEntryModeSet | entryLeft,
 	})
+
+	lcd.writeIR([]byte{cmdDisplayControl | displayOn})
+	lcd.writeIR([]byte{cmdClearDisplay})
+	lcd.writeIR([]byte{cmdEntryModeSet | entryLeft})
 	time.Sleep(time.Duration(200) * time.Millisecond)
 
 	//lcd.dev.Write([]byte{backlightOn})
