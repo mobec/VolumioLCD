@@ -65,8 +65,8 @@ func New(line int, addr int) (*LCD, error) {
 		return nil, err
 	}
 
-	lcd.dev.Write([]byte{0x03, 0x03, 0x03, 0x02})
-	lcd.dev.Write([]byte{
+	lcd.writeIR([]byte{0x03, 0x03, 0x03, 0x02})
+	lcd.writeIR([]byte{
 		// the PCF8574 lcd backpack has only 4 data bus lines (DB4 to DB7)
 		cmdFunctionSet | func2Line | func5x8Dots | func4BitMode,
 		cmdDisplayControl | displayOn,
@@ -74,7 +74,8 @@ func New(line int, addr int) (*LCD, error) {
 		cmdEntryModeSet | entryLeft,
 	})
 	time.Sleep(time.Duration(200) * time.Millisecond)
-	lcd.dev.Write([]byte{backlightOn})
+
+	lcd.writeIR([]byte{backlightOn})
 
 	return &lcd, err
 }
@@ -95,7 +96,8 @@ func (l *LCD) Show(str string, line uint8, pos uint8) error {
 		return fmt.Errorf("Line %d is not valid", line)
 	}
 
-	l.dev.Write([]byte{0x80 + addr})
+	l.writeIR([]byte{0x80 + addr})
+	l.writeDR([]byte("Hello World"))
 
 	return nil
 }
@@ -129,17 +131,17 @@ func unnibble(nibBuf []byte) []byte {
 	return data
 }
 
-func (l *LCD) writeIR(cmd byte) error {
+func (l *LCD) writeIR(cmds []byte) error {
 	// IR write as an internal operation (display clear, etc.)
-	data := nibble(en, []byte{cmd})
+	data := nibble(en, cmds)
 	return l.dev.Write(data)
 }
 
-func (l *LCD) readIR() (byte, error) {
+func (l *LCD) readIR(length int) ([]byte, error) {
 	// Read busy flag (DB7) and address counter (DB0 to DB6)
-	buf := nibble(en|rw, []byte{0x00})
+	buf := nibble(en|rw, make([]byte, length))
 	err := l.dev.Read(buf)
-	return unnibble(buf)[0], err
+	return unnibble(buf), err
 }
 
 func (l *LCD) writeDR(data []byte) error {
@@ -148,9 +150,9 @@ func (l *LCD) writeDR(data []byte) error {
 	return l.dev.Write(buf)
 }
 
-func (l *LCD) readDR() (byte, error) {
+func (l *LCD) readDR(length int) ([]byte, error) {
 	// DR read as an internal operation (DDRAM or CGRAM to DR)
-	buf := nibble(en|rw|rs, []byte{0x00})
+	buf := nibble(en|rw|rs, make([]byte, length))
 	err := l.dev.Read(buf)
-	return unnibble(buf)[0], err
+	return unnibble(buf), err
 }
