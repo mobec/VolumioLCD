@@ -66,18 +66,18 @@ func New(line int, addr int) (*LCD, error) {
 	}
 
 	lcd.dev.Write([]byte{0x03, 0x03, 0x03, 0x02})
-	lcd.writeIR([]byte{
+	lcd.writeIR(
 		// the PCF8574 lcd backpack has only 4 data bus lines (DB4 to DB7)
 		cmdFunctionSet | func2Line | func5x8Dots | func4BitMode,
-	})
+	)
 
-	lcd.writeIR([]byte{cmdDisplayControl | displayOn})
-	lcd.writeIR([]byte{cmdClearDisplay})
-	lcd.writeIR([]byte{cmdEntryModeSet | entryLeft})
+	lcd.writeIR(cmdDisplayControl | displayOn)
+	lcd.writeIR(cmdClearDisplay)
+	lcd.writeIR(cmdEntryModeSet | entryLeft)
 	time.Sleep(time.Duration(200) * time.Millisecond)
 
 	//lcd.dev.Write([]byte{backlightOn})
-	lcd.writeIR([]byte{0x00})
+	lcd.writeIR(0x00)
 
 	return &lcd, err
 }
@@ -98,9 +98,9 @@ func (l *LCD) Show(str string, line uint8, pos uint8) error {
 		return fmt.Errorf("Line %d is not valid", line)
 	}
 
-	l.writeIR([]byte{cmdSetDRAMAddr | addr})
+	l.writeIR(cmdSetDRAMAddr | addr)
 	for i := range str {
-		l.writeDR([]byte{str[i]})
+		l.writeDR(str[i])
 	}
 
 	return nil
@@ -115,68 +115,55 @@ func (l *LCD) Close() {
 
 //nibble splits 8bit data into nibbled 4b data + 4b signal
 // data of double length
-func nibble(mode byte, data []byte) []byte {
-	nibBuf := make([]byte, 6*len(data))
-	for i := range data {
-		higher := (data[i] & 0xF0)
-		lower := ((data[i] << 4) & 0xF0)
-		nibBuf[i] = higher | mode | backlightOn
-		nibBuf[i+1] = higher | mode | en | backlightOn
-		nibBuf[i+2] = higher | mode | backlightOn
-
-		nibBuf[i+3] = lower | mode | backlightOn
-		nibBuf[i+4] = lower | mode | en | backlightOn
-		nibBuf[i+5] = lower | mode | backlightOn
-	}
+func nibble(mode byte, data byte) []byte {
+	nibBuf := make([]byte, 2)
+	higher := (data & 0xF0)
+	lower := ((data << 4) & 0xF0)
+	nibBuf[0] = higher | mode | backlightOn
+	nibBuf[1] = lower | mode | backlightOn
 	return nibBuf
 }
 
 //unnibble merges nibbled (4bit) data into 8bit data
-func unnibble(nibBuf []byte) []byte {
-	data := make([]byte, len(nibBuf)/6)
-	for i := range data {
-		higher := nibBuf[i] & 0xF0
-		lower := (nibBuf[i+2] & 0xF0) >> 4
-		data[i] = higher | lower
-	}
-	return data
+func unnibble(nibBuf []byte) byte {
+	higher := nibBuf[0] & 0xF0
+	lower := (nibBuf[1] & 0xF0) >> 4
+	return higher | lower
 }
 
-func (l *LCD) writeIR(cmds []byte) error {
+func (l *LCD) writeIR(cmd byte) error {
 	// IR write as an internal operation (display clear, etc.)
-	data := nibble(0x00, cmds)
+	data := nibble(0x00, cmd)
 	// return l.dev.Write(data)
-	return slowWrite(l.dev, data)
+	return l.writeToDev(data)
 }
 
-func (l *LCD) readIR(length int) ([]byte, error) {
+func (l *LCD) readIR() (byte, error) {
 	// Read busy flag (DB7) and address counter (DB0 to DB6)
-	buf := nibble(rw, make([]byte, length))
+	buf := nibble(rw, 0x00)
 	err := l.dev.Read(buf)
 	return unnibble(buf), err
 }
 
-func (l *LCD) writeDR(data []byte) error {
+func (l *LCD) writeDR(data byte) error {
 	// DR write as an internal operation (DR to DDRAM or CGRAM
 	buf := nibble(rs, data)
-	// return l.dev.Write(buf)
-	return slowWrite(l.dev, buf)
+	return l.writeToDev(buf)
 }
 
-func (l *LCD) readDR(length int) ([]byte, error) {
+func (l *LCD) readDR() (byte, error) {
 	// DR read as an internal operation (DDRAM or CGRAM to DR)
-	buf := nibble(rw|rs, make([]byte, length))
+	buf := nibble(rw|rs, 0x00)
 	err := l.dev.Read(buf)
 	return unnibble(buf), err
 }
 
-func slowWrite(dev *i2c.Device, data []byte) error {
+func (l *LCD) writeToDev(data []byte) error {
+	strobeBuf := make([]byte, 3*len(data))
 	for i := range data {
-		err := dev.Write([]byte{data[i]})
-		if err != nil {
-			return err
-		}
-		//time.Sleep(time.Duration(5) * time.Millisecond)
+		strobeBuf[i] = data[i]
+		strobeBuf[i+1] = data[i] | en
+		strobeBuf[i+2] = data[i]
 	}
-	return nil
+	return l.dev.Write(strobeBuf)
 }
