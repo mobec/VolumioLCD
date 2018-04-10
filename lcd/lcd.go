@@ -112,20 +112,24 @@ func (l *LCD) Close() {
 //nibble splits 8bit data into nibbled 4b data + 4b signal
 // data of double length
 func nibble(mode byte, data []byte) []byte {
-	nibBuf := make([]byte, 2*len(data))
+	nibBuf := make([]byte, 4*len(data))
 	for i := range data {
-		nibBuf[i] = (data[i] & 0xF0) | mode
-		nibBuf[i+1] = ((data[i] << 4) & 0xF0) | mode
+		higher := (data[i] & 0xF0)
+		lower := ((data[i] << 4) & 0xF0)
+		nibBuf[i] = higher | mode
+		nibBuf[i+1] = higher | (mode & ^en)
+		nibBuf[i+2] = lower | mode
+		nibBuf[i+3] = lower | (mode & ^en)
 	}
 	return nibBuf
 }
 
 //unnibble merges nibbled (4bit) data into 8bit data
 func unnibble(nibBuf []byte) []byte {
-	data := make([]byte, len(nibBuf)/2)
+	data := make([]byte, len(nibBuf)/4)
 	for i := range data {
 		higher := nibBuf[i] & 0xF0
-		lower := (nibBuf[i+1] & 0xF0) >> 4
+		lower := (nibBuf[i+2] & 0xF0) >> 4
 		data[i] = higher | lower
 	}
 	return data
