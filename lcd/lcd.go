@@ -99,7 +99,9 @@ func (l *LCD) Show(str string, line uint8, pos uint8) error {
 	}
 
 	l.writeIR([]byte{cmdSetDRAMAddr | addr})
-	l.writeDR([]byte(str))
+	for i := range str {
+		l.writeDR([]byte{str[i]})
+	}
 
 	return nil
 }
@@ -174,7 +176,7 @@ func slowWrite(dev *i2c.Device, data []byte) error {
 		if err != nil {
 			return err
 		}
-		time.Sleep(time.Duration(100) * time.Millisecond)
+		time.Sleep(time.Duration(10) * time.Millisecond)
 	}
 	return nil
 }
