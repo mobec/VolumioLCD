@@ -73,6 +73,7 @@ func New(line int, addr int) (*LCD, error) {
 		cmdEntryModeSet | entryLeft,
 	})
 	time.Sleep(time.Duration(200) * time.Millisecond)
+    lcd.dev.Write([]byte{backlightOn})
 
 	return &lcd, err
 }

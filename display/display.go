@@ -28,7 +28,9 @@ func NewLCD(line int, address uint8) LCD {
 	}
 
 	lcd.connection.WriteByte(0x08)
-	// lcd.lcd, err = i2c.NewLcd(lcd.connection, 0x04, 0x01, 0x02, 0x10, 0x20, 0x40, 0x80, 0x08)
+    time.Sleep(time.Duration(5.0) * time.Second)
+    lcd.connection.WriteByte(0x00)
+// lcd.lcd, err = i2c.NewLcd(lcd.connection, 0x04, 0x01, 0x02, 0x10, 0x20, 0x40, 0x80, 0x08)
 	// if err != nil {
 	// 	logger.Errorf(err.Error())
 	// }

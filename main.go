@@ -3,6 +3,7 @@ package main
 import (
 	"VolumioLCD/lcd"
 	"log"
+    "time"
 )
 
 // import "fmt"
@@ -67,5 +68,7 @@ func main() {
 	}
 	defer lcd.Close()
 
-	lcd.Show("Hello World", 1, 0)
+	//lcd.Show("Hello World", 1, 0)
+
+    time.Sleep(time.Duration(10) * time.Second)
 }
