@@ -127,6 +127,9 @@ func (v *ScrollView) update(deltaTime float64) {
 
 	print(deltaTime)
 	v.time += deltaTime
+	if v.time > 2*characterDuration {
+		v.time = 2 * characterDuration
+	}
 	if v.time > characterDuration {
 		v.time -= characterDuration
 		if v.reverse {
