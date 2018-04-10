@@ -25,7 +25,7 @@ func New(line int, address int) *Display {
 		logger.Errorf(err.Error())
 	}
 
-	d.frequency = 0.5
+	d.frequency = 10
 	d.Screen = NewScreen(2, 16)
 	//time.Sleep(time.Duration(10.0) * time.Second)
 

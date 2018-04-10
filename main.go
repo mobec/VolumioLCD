@@ -37,6 +37,7 @@ func main() {
 	var titleScroll display.ScrollView
 	titleScroll.SetChild(&titleText)
 	titleScroll.SetLength(16)
+	titleScroll.SetSpeed(0.5)
 	lcd.Screen.GetRow(0).SetChild(&artistText)
 	lcd.Screen.GetRow(1).SetChild(&titleScroll)
 	defer lcd.Close()
