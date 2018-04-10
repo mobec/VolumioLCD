@@ -48,13 +48,11 @@ func (d *Display) loop() {
 
 		for idx := 0; idx < len(d.Screen.rows); idx++ {
 			row := d.Screen.rows[idx].content()
-			println(row)
 			err := d.lcd.Show(row, uint8(idx+1), 0)
 			if err != nil {
 				logger.Errorf(err.Error())
 			}
 		}
-		println()
 		//sleep thread to limit frequency
 		time.Sleep(time.Duration(1.0/d.frequency)*time.Second - time.Since(d.loopStart))
 	}
