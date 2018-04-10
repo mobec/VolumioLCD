@@ -65,7 +65,7 @@ func New(line int, addr int) (*LCD, error) {
 		return nil, err
 	}
 
-	lcd.writeIR([]byte{0x03, 0x03, 0x03, 0x02})
+	//lcd.writeIR([]byte{0x03, 0x03, 0x03, 0x02})
 	lcd.writeIR([]byte{
 		// the PCF8574 lcd backpack has only 4 data bus lines (DB4 to DB7)
 		cmdFunctionSet | func2Line | func5x8Dots | func4BitMode,
@@ -75,8 +75,8 @@ func New(line int, addr int) (*LCD, error) {
 	})
 	time.Sleep(time.Duration(200) * time.Millisecond)
 
-	lcd.dev.Write([]byte{backlightOn})
-	//lcd.writeIR([]byte{backlightOn})
+	//lcd.dev.Write([]byte{backlightOn})
+	lcd.writeIR([]byte{0x00})
 
 	return &lcd, err
 }
@@ -98,7 +98,7 @@ func (l *LCD) Show(str string, line uint8, pos uint8) error {
 	}
 
 	l.writeIR([]byte{0x80 + addr})
-	l.writeDR([]byte("Hello World"))
+	l.writeDR([]byte(str))
 
 	return nil
 }
@@ -115,7 +115,7 @@ func (l *LCD) Close() {
 func nibble(mode byte, data []byte) []byte {
 	nibBuf := make([]byte, 4*len(data))
 	for i := range data {
-		higher := (data[i] & 0xF0)
+		higher := (data[i] & 0x0F)
 		lower := ((data[i] << 4) & 0xF0)
 		nibBuf[i] = higher | mode | backlightOn
 		nibBuf[i+1] = higher | mode | en | backlightOn
