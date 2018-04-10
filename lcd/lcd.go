@@ -161,9 +161,9 @@ func (l *LCD) readDR() (byte, error) {
 func (l *LCD) writeToDev(data []byte) error {
 	strobeBuf := make([]byte, 3*len(data))
 	for i := range data {
-		strobeBuf[i] = data[i]
-		strobeBuf[i+1] = data[i] | en
-		strobeBuf[i+2] = data[i]
+		strobeBuf[i*3] = data[i]
+		strobeBuf[i*3+1] = data[i] | en
+		strobeBuf[i*3+2] = data[i]
 	}
 	return l.dev.Write(strobeBuf)
 }
