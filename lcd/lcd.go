@@ -65,7 +65,7 @@ func New(line int, addr int) (*LCD, error) {
 		return nil, err
 	}
 
-	//lcd.writeIR([]byte{0x03, 0x03, 0x03, 0x02})
+	lcd.dev.Write([]byte{0x03, 0x03, 0x03, 0x02})
 	lcd.writeIR([]byte{
 		// the PCF8574 lcd backpack has only 4 data bus lines (DB4 to DB7)
 		cmdFunctionSet | func2Line | func5x8Dots | func4BitMode,
