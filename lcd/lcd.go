@@ -98,7 +98,7 @@ func (l *LCD) Show(str string, line uint8, pos uint8) error {
 		return fmt.Errorf("Line %d is not valid", line)
 	}
 
-	l.writeIR([]byte{0x80 + addr})
+	l.writeIR([]byte{cmdSetDRAMAddr | addr})
 	l.writeDR([]byte(str))
 
 	return nil
