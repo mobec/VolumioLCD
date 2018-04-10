@@ -42,7 +42,7 @@ func Infof(format string, v ...interface{}) {
 func Errorf(format string, v ...interface{}) {
 	errstr := fmt.Sprintf("\033[1;31m[ERROR]\033[1;37m %s\033[0;37m", fmt.Sprintf(format, v...))
 	log.Printf(errstr)
-	panic(errstr)
+	//panic(errstr)
 }
 
 // AssertInfof asserts the expression with a info
