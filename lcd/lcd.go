@@ -117,9 +117,9 @@ func nibble(mode byte, data []byte) []byte {
 		higher := (data[i] & 0xF0)
 		lower := ((data[i] << 4) & 0xF0)
 		nibBuf[i] = higher | mode
-		nibBuf[i+1] = higher | (mode & ^en)
+		nibBuf[i+1] = higher | mode | en
 		nibBuf[i+2] = lower | mode
-		nibBuf[i+3] = lower | (mode & ^en)
+		nibBuf[i+3] = lower | mode | en
 	}
 	return nibBuf
 }
@@ -137,26 +137,26 @@ func unnibble(nibBuf []byte) []byte {
 
 func (l *LCD) writeIR(cmds []byte) error {
 	// IR write as an internal operation (display clear, etc.)
-	data := nibble(en, cmds)
+	data := nibble(0x00, cmds)
 	return l.dev.Write(data)
 }
 
 func (l *LCD) readIR(length int) ([]byte, error) {
 	// Read busy flag (DB7) and address counter (DB0 to DB6)
-	buf := nibble(en|rw, make([]byte, length))
+	buf := nibble(rw, make([]byte, length))
 	err := l.dev.Read(buf)
 	return unnibble(buf), err
 }
 
 func (l *LCD) writeDR(data []byte) error {
 	// DR write as an internal operation (DR to DDRAM or CGRAM
-	buf := nibble(en|rs, data)
+	buf := nibble(rs, data)
 	return l.dev.Write(buf)
 }
 
 func (l *LCD) readDR(length int) ([]byte, error) {
 	// DR read as an internal operation (DDRAM or CGRAM to DR)
-	buf := nibble(en|rw|rs, make([]byte, length))
+	buf := nibble(rw|rs, make([]byte, length))
 	err := l.dev.Read(buf)
 	return unnibble(buf), err
 }
