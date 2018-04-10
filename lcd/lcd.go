@@ -117,10 +117,10 @@ func nibble(mode byte, data []byte) []byte {
 	for i := range data {
 		higher := (data[i] & 0xF0)
 		lower := ((data[i] << 4) & 0xF0)
-		nibBuf[i] = higher | mode
-		nibBuf[i+1] = higher | mode | en
-		nibBuf[i+2] = lower | mode
-		nibBuf[i+3] = lower | mode | en
+		nibBuf[i] = higher | mode | backlightOn
+		nibBuf[i+1] = higher | mode | en | backlightOn
+		nibBuf[i+2] = lower | mode | backlightOn
+		nibBuf[i+3] = lower | mode | en | backlightOn
 	}
 	return nibBuf
 }
