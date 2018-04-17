@@ -59,9 +59,9 @@ func main() {
 			artistText.SetText(state.Artist)
 			titleText.SetText(state.Title)
 			if state.Status == "play" {
-				lcd.Backlight(true)
+				lcd.Backlight = true
 			} else {
-				lcd.Backlight(false)
+				lcd.Backlight = false
 			}
 			time.Sleep(time.Duration(updateInterval) * time.Millisecond)
 		}

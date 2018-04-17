@@ -13,6 +13,7 @@ type Display struct {
 	lcd       *lcd.LCD
 	Screen    *Screen
 	loopStart time.Time
+	Backlight bool // access is atomic, no synchronisation required
 	frequency float64
 }
 
@@ -31,11 +32,6 @@ func New(line int, address int) *Display {
 
 	go d.loop()
 	return &d
-}
-
-//Backlight allows to control the backlight of the physical device
-func (d *Display) Backlight(isOn bool) {
-	d.lcd.Backlight(isOn)
 }
 
 // Close must be called to close the connection to the lcd in a clean way
@@ -58,6 +54,9 @@ func (d *Display) loop() {
 				logger.Errorf(err.Error())
 			}
 		}
+
+		d.lcd.Backlight(d.Backlight)
+
 		//sleep thread to limit frequency
 		time.Sleep(time.Duration(1.0/d.frequency)*time.Second - time.Since(d.loopStart)*time.Second)
 	}
