@@ -2,6 +2,7 @@ package lcd
 
 import (
 	"fmt"
+	"sync"
 	"time"
 
 	"golang.org/x/exp/io/i2c"
@@ -53,8 +54,10 @@ const (
 )
 
 type LCD struct {
-	dev *i2c.Device
-	bl  byte
+	// mutex protecting the ressource
+	mutex sync.Mutex
+	dev   *i2c.Device
+	bl    byte
 }
 
 //New opens a connection to an lcd display and sets it up
@@ -100,6 +103,8 @@ func (l *LCD) Show(str string, line uint8, pos uint8) error {
 		return fmt.Errorf("Line %d is not valid", line)
 	}
 
+	l.mutex.Lock()
+	defer l.mutex.Unlock()
 	if err := l.writeIR(cmdSetDRAMAddr | addr); err != nil {
 		return err
 	}
@@ -108,12 +113,13 @@ func (l *LCD) Show(str string, line uint8, pos uint8) error {
 			return err
 		}
 	}
-
 	return nil
 }
 
 //Backlight allows to turn the lcd's backlight on and off
 func (l *LCD) Backlight(isOn bool) error {
+	l.mutex.Lock()
+	defer l.mutex.Unlock()
 	if isOn {
 		l.bl = backlightOn
 	} else {
@@ -124,6 +130,8 @@ func (l *LCD) Backlight(isOn bool) error {
 
 //Clear clears the display from characters
 func (l *LCD) Clear() error {
+	l.mutex.Lock()
+	defer l.mutex.Unlock()
 	return l.writeIR(cmdClearDisplay)
 }
 
@@ -131,7 +139,10 @@ func (l *LCD) Clear() error {
 func (l *LCD) Close() {
 	l.Clear()
 	l.Backlight(false)
+
+	l.mutex.Lock()
 	l.dev.Close()
+	l.mutex.Unlock()
 }
 
 // Driver functions
