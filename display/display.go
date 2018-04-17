@@ -11,7 +11,7 @@ type IDisplay interface {
 
 type Display struct {
 	lcd       *lcd.LCD
-	Screen    Screen
+	Screen    *Screen
 	loopStart time.Time
 	frequency float64
 }
@@ -31,6 +31,11 @@ func New(line int, address int) *Display {
 
 	go d.loop()
 	return &d
+}
+
+//Backlight allows to control the backlight of the physical device
+func (d *Display) Backlight(isOn bool) {
+	d.lcd.Backlight(isOn)
 }
 
 // Close must be called to close the connection to the lcd in a clean way
