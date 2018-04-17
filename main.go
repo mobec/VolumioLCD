@@ -53,7 +53,7 @@ func main() {
 
 	go func() {
 		// allow to check for changes
-		var prevTrack string
+		var prevTitle string
 		var prevArtist string
 
 		// main loop
