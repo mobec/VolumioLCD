@@ -9,13 +9,13 @@ type Screen struct {
 }
 
 //NewScreen for a display with displays physical parameters
-func NewScreen(rows int, rowLength int) Screen {
+func NewScreen(rows int, rowLength int) *Screen {
 	var s Screen
 	s.rows = make([]RowView, rows)
 	for i := 0; i < rows; i++ {
 		s.rows[i].length = rowLength
 	}
-	return s
+	return &s
 }
 
 //update all the rows and therefore views of the screen

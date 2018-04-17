@@ -64,15 +64,3 @@ func main() {
 
 	<-sig
 }
-
-// func main() {
-// 	lcd, err := lcd.New(1, 0x27)
-// 	if err != nil {
-// 		log.Fatal(err)
-// 	}
-// 	defer lcd.Close()
-
-// 	lcd.Show("Hello World", 1, 0)
-
-// 	time.Sleep(time.Duration(5) * time.Second)
-// }
