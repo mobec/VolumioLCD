@@ -13,11 +13,12 @@ import (
 // import "fmt"
 
 const (
-	updateInterval int    = 500
-	volumioURI     string = "http://volumio.local:3000"
+	updateInterval int    = 200
+	volumioURI     string = "http://localhost:3000"
 )
 
 func main() {
+	// Correctly handle os messages
 	ctx := context.Background()
 	ctx, cancel := context.WithCancel(ctx)
 	sig := make(chan os.Signal, 1)
@@ -51,6 +52,11 @@ func main() {
 	}()
 
 	go func() {
+		// allow to check for changes
+		var prevTrack string
+		var prevArtist string
+
+		// main loop
 		for {
 			state, err := volumio.GetPlayerState()
 			if err != nil {
@@ -58,9 +64,12 @@ func main() {
 			}
 			artistText.SetText(state.Artist)
 			titleText.SetText(state.Title)
-			if state.Status == "play" {
+			if state.Status == "play" &&
+				(state.Artist != prevArtist || state.Title != prevTitle) &&
+				state.Artist != "" &&
+				state.Title != "" {
 				lcd.Backlight = true
-			} else {
+			} else if state.Status == "stop" || state.Status == "pause" {
 				lcd.Backlight = false
 			}
 			time.Sleep(time.Duration(updateInterval) * time.Millisecond)
