@@ -14,5 +14,5 @@ VolumioLCD is a tool to display the Volumio player state on hd44780 LCD displays
 ## Installation
 1) Install golang using the official .tar (do NOT use apt-get)
 2) Clone the VolumioLCD repository to $GOPATH/src
-3) inside the VolumioLCD directory: ```go get``` and then ```go build```
+3) inside the VolumioLCD directory: ```go get``` and then ```go install```
 4) start VolumioLCD on every boot (e.g. using systemd)
