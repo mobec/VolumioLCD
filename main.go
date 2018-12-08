@@ -58,13 +58,15 @@ func main() {
 
 		// main loop
 		for {
+			time.Sleep(time.Duration(updateInterval) * time.Millisecond)
 			state, err := volumio.GetPlayerState()
 			if err != nil {
 				logger.Warningf(err.Error())
-			}
+			    continue
+            }
 			artistText.SetText(state.Artist)
 			titleText.SetText(state.Title)
-			if state.Status == "play" &&
+            if state.Status == "play" &&
 				(state.Artist != prevArtist || state.Title != prevTitle) &&
 				state.Artist != "" &&
 				state.Title != "" {
@@ -72,7 +74,6 @@ func main() {
 			} else if state.Status == "stop" || state.Status == "pause" {
 				lcd.Backlight = false
 			}
-			time.Sleep(time.Duration(updateInterval) * time.Millisecond)
 		}
 	}()
 

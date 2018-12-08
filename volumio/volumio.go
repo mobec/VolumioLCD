@@ -13,7 +13,7 @@ var (
 
 const (
 	maxIdleConnections int = 20
-	timeout            int = 5
+	timeout            int = 60
 )
 
 func init() {
