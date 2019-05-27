@@ -38,6 +38,7 @@ func main() {
 		time.Sleep(waitTime)
 		timeout -= waitTime
 	}
+	time.Sleep(5.0 * time.Second)
 	lcd := display.New(1, 0x27)
 	lcd.Screen = display.NewScreen(2, 16)
 	var artistText display.TextView
