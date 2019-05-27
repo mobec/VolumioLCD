@@ -40,7 +40,7 @@ type PlayerState struct {
 	Duration          int
 	Samplerate        string
 	Bitdepth          string
-	Channels          string
+	// Channels          int
 	Volume            int
 	Random            bool
 	Repeat            bool
