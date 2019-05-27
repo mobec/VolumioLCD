@@ -4,6 +4,7 @@ import (
 	"VolumioLCD/display"
 	"VolumioLCD/logger"
 	"VolumioLCD/volumio"
+	"VolumioLCD/utils"
 	"context"
 	"os"
 	"os/signal"
@@ -31,6 +32,12 @@ func main() {
 	// Initialize volumio client
 	volumio.URI = volumioURI
 
+	timeout := 60.0 * time.Second;
+	for(!utils.PathExists("/dev/i2c-1") && timeout > 0.0) {
+		waitTime := 1.0 * time.Second
+		time.Sleep(waitTime)
+		timeout -= waitTime
+	}
 	lcd := display.New(1, 0x27)
 	lcd.Screen = display.NewScreen(2, 16)
 	var artistText display.TextView
