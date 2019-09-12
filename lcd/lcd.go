@@ -69,22 +69,69 @@ func New(line int, addr int) (*LCD, error) {
 		return nil, err
 	}
 
-	lcd.dev.Write([]byte{0x03, 0x03, 0x03, 0x02})
-	lcd.writeIR(
-		// the PCF8574 lcd backpack has only 4 data bus lines (DB4 to DB7)
-		cmdFunctionSet | func2Line | func5x8Dots | func4BitMode,
-	)
-
-	lcd.writeIR(cmdDisplayControl | displayOn)
-	lcd.writeIR(cmdClearDisplay)
-	lcd.writeIR(cmdEntryModeSet | entryLeft)
+	// Initialization sequence
+	lcd.initialize()
 	time.Sleep(time.Duration(200) * time.Millisecond)
+	lcd.writeIR(cmdDisplayControl | displayOn)
 
 	//lcd.dev.Write([]byte{backlightOn})
 	lcd.bl = backlightOn
 	lcd.writeIR(0x00)
 
 	return &lcd, err
+}
+
+// initialize the HD44780U lcd with initialization by instruction
+func (l *LCD) initialize() error {
+	// write 0 0 1 1
+	err := l.writeToDev([]byte{0x03})
+	if err != nil {
+		return err
+	}
+	// wait for more than 4.1 ms
+	time.Sleep(time.Duration(5) * time.Millisecond)
+	// write 0 0 1 1
+	err = l.writeToDev([]byte{0x03})
+	if err != nil {
+		return err
+	}
+	// wait for more than 100 μs
+	time.Sleep(time.Duration(100) * time.Microsecond)
+	err = l.writeToDev([]byte{0x03})
+	if err != nil {
+		return err
+	}
+
+	// function set to 4 bit interface
+	err = l.writeToDev([]byte{0x02})
+	if err != nil {
+		return err
+	}
+
+	// from here on we are in 4 bit mode and we need to nibble
+
+	// function set the number of display lines and character font
+	err = l.writeIR(cmdFunctionSet | func2Line | func5x8Dots | func4BitMode)
+	if err != nil {
+		return err
+	}
+
+	err = l.writeIR(cmdDisplayControl | displayOff)
+	if err != nil {
+		return err
+	}
+
+	err = l.writeIR(cmdClearDisplay)
+	if err != nil {
+		return err
+	}
+
+	err = l.writeIR(cmdEntryModeSet | entryLeft | entryShiftIncrement)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 //Show presents a string on the display
