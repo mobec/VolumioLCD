@@ -96,7 +96,7 @@ func (l *LCD) initialize() error {
 		return err
 	}
 	// wait for more than 100 μs
-	time.Sleep(time.Duration(100) * time.Microsecond)
+	time.Sleep(time.Duration(150) * time.Microsecond)
 	err = l.writeToDev([]byte{0x03})
 	if err != nil {
 		return err
