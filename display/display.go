@@ -30,7 +30,6 @@ func New(line int, address int) *Display {
 	d.Screen = NewScreen(2, 16)
 	//time.Sleep(time.Duration(10.0) * time.Second)
 
-	go d.loop()
 	return &d
 }
 
@@ -38,8 +37,9 @@ func New(line int, address int) *Display {
 func (d *Display) Close() {
 	d.lcd.Close()
 }
-
-func (d *Display) loop() {
+ 
+// Loop is a goroutine to update the display continuously
+func (d *Display) Loop() {
 	for {
 		deltaTime := time.Since(d.loopStart)
 		d.loopStart = time.Now()
